@@ -17,4 +17,14 @@ CHIP PC {
 
     PARTS:
     // Put your code here:
+     // Feedback current value into Inc16
+    Register(in=next, load=true, out=current, out=out);
+    Inc16(in=current, out=incremented);
+    
+    // Select between inc or keep current
+    Mux16(a=current, b=incremented, sel=inc, out=afterInc);
+    // Override with in if load
+    Mux16(a=afterInc, b=in, sel=load, out=afterLoad);
+    // Override with 0 if reset
+    Mux16(a=afterLoad, b=false, sel=reset, out=next);
 }
