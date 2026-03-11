@@ -78,6 +78,7 @@ CHIP CPU {
     // j1=instruction[2] jump if negative
     // j2=instruction[1] jump if zero
     // j3=instruction[0] jump if positive
+   
     And(a=instruction[2], b=ng, out=jumpNeg);
     And(a=instruction[1], b=zr, out=jumpZero);
     Not(in=ng, out=notNg);

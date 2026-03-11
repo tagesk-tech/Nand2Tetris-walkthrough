@@ -60,7 +60,23 @@ class Code(object):
         pass    
 
     def Dest(self, mnemonic):
-        return None
+        
+        if len(mnemonic) == 0:
+            return '000'
+        a = '0'
+        d = '0'
+        m = '0'
+        for c in mnemonic:
+            if c == 'A':
+                a = '1'
+            elif c == 'D':
+                d = '1'
+            elif c == 'M':
+                m = '1'
+            else:
+                return None
+        return a + d + m
+    
 ################################################################
 # To be completed:
 #       Returns the binary code of the dest mnemonic. (3 bits)

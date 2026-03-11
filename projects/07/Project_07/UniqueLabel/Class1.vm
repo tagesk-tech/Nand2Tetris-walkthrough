@@ -1,0 +1,12 @@
+function Class1.test 0
+push argument 0
+push argument 1
+lt                     // checks if a<b
+if-goto IF_TRUE
+goto IF_FALSE
+label IF_TRUE
+push constant 1
+return
+label IF_FALSE
+push constant 0
+return

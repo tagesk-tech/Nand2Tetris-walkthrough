@@ -1,0 +1,140 @@
+// This file is part of www.nand2tetris.org
+// and the book "The Elements of Computing Systems"
+// by Nisan and Schocken, MIT Press.
+// File name: projects/12/Memory.jack
+
+/**
+ * Memory operations library.
+ */
+class Memory {
+    static Array ram;
+    static int freeList;
+
+    /** Initializes memory parameters. */
+    function void init() {
+        // Map ram to address 0 so ram[addr] accesses any RAM location
+        let ram = 0;
+
+        // Heap starts at 2048, ends at 16383
+        // Initialize one big free block covering the entire heap
+        // freeList points to the first free block
+        let freeList = 2048;
+        let ram[freeList] = 0;         // next pointer: null (no other free blocks)
+        let ram[freeList + 1] = 14334; // size: total heap (14336) minus 2 words of overhead
+        return;
+    }
+
+    /** Returns the value of the main memory at the given address. */
+    function int peek(int address) {
+        return ram[address];
+    }
+
+    /** Sets the value of the main memory at this address
+     *  to the given value. */
+    function void poke(int address, int value) {
+        let ram[address] = value;
+        return;
+    }
+
+    /** finds and allocates from the heap a memory block of the
+     *  specified size and returns a reference to its base address. */
+    function int alloc(int size) {
+        var int current, prev, blockSize, remaining;
+
+        // Walk the free list looking for a block big enough
+        let current = freeList;
+        let prev = 0;
+
+        while (~(current = 0)) {
+            let blockSize = ram[current + 1];
+
+            // Check if this block can fit the requested size
+            if (~(blockSize < size)) {
+                // Found a block that fits
+                let remaining = blockSize - size - 2;
+
+                if (remaining > 2) {
+                    // Split: shrink current block, allocate from the end
+                    // Current block keeps the remaining space
+                    let ram[current + 1] = remaining;
+
+                    // New allocated block starts after the remaining free space
+                    // Store its size in the word just before the returned address
+                    let ram[current + 2 + remaining] = 0;        // next (unused for allocated)
+                    let ram[current + 2 + remaining + 1] = size;  // size of allocated block
+                    return current + 2 + remaining + 2;           // return usable address
+                }
+                else {
+                    // Block is too small to split — give the whole thing
+                    // Remove this block from the free list
+                    if (prev = 0) {
+                        // It's the head of the free list
+                        let freeList = ram[current];
+                    }
+                    else {
+                        // Link previous block to the next one, skipping current
+                        let ram[prev] = ram[current];
+                    }
+                    // Return the usable part (skip the 2 header words)
+                    return current + 2;
+                }
+            }
+
+            // Move to next free block
+            let prev = current;
+            let current = ram[current];
+        }
+
+        // No block found — return 0 (null)
+        return 0;
+    }
+
+    /** De-allocates the given object and frees its space. */
+    function void deAlloc(int object) {
+        var int block, size, current, prev, next;
+
+        // The block header starts 2 words before the object pointer
+        let block = object - 2;
+        let size = ram[block + 1];
+
+        // Insert into free list in address order (needed for defragmentation)
+        // Find where this block belongs in the sorted free list
+        let prev = 0;
+        let current = freeList;
+
+        while ((~(current = 0)) & (current < block)) {
+            let prev = current;
+            let current = ram[current];
+        }
+
+        // Insert block between prev and current
+        let ram[block] = current;    // block.next = current
+        if (prev = 0) {
+            let freeList = block;    // block becomes new head
+        }
+        else {
+            let ram[prev] = block;   // prev.next = block
+        }
+
+        // Defragment: try to merge block with the next free block
+        if (~(current = 0)) {
+            // Check if block and current are adjacent in memory
+            if ((block + 2 + size) = current) {
+                // Merge: absorb current into block
+                let ram[block + 1] = size + 2 + ram[current + 1];
+                let ram[block] = ram[current]; // skip current in the list
+            }
+        }
+
+        // Defragment: try to merge prev with block
+        if (~(prev = 0)) {
+            if ((prev + 2 + ram[prev + 1]) = block) {
+                // Merge: absorb block into prev
+                let ram[prev + 1] = ram[prev + 1] + 2 + ram[block + 1];
+                let ram[prev] = ram[block]; // skip block in the list
+            }
+        }
+
+        return;
+    }
+}

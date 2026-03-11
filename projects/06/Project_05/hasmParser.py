@@ -175,13 +175,20 @@ class Parser(object):
         
 
     def _ParseDest(self):
-        self.dest = ''
+        dest = self.line
+        i = dest.find('=')
+        if i != -1:
+            self.dest = dest[:i].strip()
+        else:
+            self.dest = ''
+            
 #################################################################################
 #   To be completed:
 #      Provides the dest mnemonic in the current C-command (8 possibilities).
 #      Sets empty string if dest is not present.
 #   Remove self.dest = '' and add your code.
 #################################################################################
+
 
         
     def _ParseComp(self):

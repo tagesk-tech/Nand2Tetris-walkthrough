@@ -1,0 +1,74 @@
+class List {
+	field int data;
+	field List next;
+
+	/* Creates a new List object. */
+	constructor List new(int car, List cdr) {
+		let data = car;
+		let next = cdr;
+		return this;
+	}
+
+	/* Disposes this List by recursively disposing its tail. */
+	method void dispose() {
+		if (~(next =  null)) {
+			do next.dispose();
+		}
+		// Use an OS routine to recycle the memory held by this object.
+		do Memory.deAlloc(this);
+		return;
+	}
+
+	/* Prints the list*/
+
+	method void print() {
+		do Output.printString(" -> ");
+		do Output.printInt(data);
+		if (~(next =  null)) {
+			do next.print();
+		}
+		return;
+	}
+
+	method int getData() {
+    return data;
+}
+
+	/* Inserts the argument in the right position of the list (ascending order)*/
+	method void insertInOrder(int ins) {
+    var List temp;
+    if (~(ins > data)) { // huge jack does not need self. before data and next
+        // ins <= data: insert before me by swapping
+        let temp = List.new(data, next); // create a new list node with the node we are att as the data and next
+        let data = ins; // the current node is updated with new data
+        let next = temp; // we assign the node we are on as the next in this case
+    } else {
+        if (next = null) {
+            // insert at end
+            let temp = List.new(ins, null);
+            let next = temp;
+        } else {
+            if (~(ins > next.getData())) {
+                // ins <= next's data: insert between me and next
+                let temp = List.new(ins, next);
+                let next = temp;
+            } else {
+                // keep walking
+                do next.insertInOrder(ins);
+            }
+        }
+    }
+    return;
+}
+
+	/* Searches the argument in the list, if found, it returns the corresponding List object*/
+	method List find(int toFind) {
+    if (data = toFind) {
+        return this;
+    }
+    if (next = null) {
+        return null;
+    }
+    return next.find(toFind);
+}
+} 

@@ -1,0 +1,291 @@
+class Main {
+    function void main() {
+      if (Main.testCorrectness0()) {
+	return;
+      }
+      if (Main.testCorrectness1()) {
+	return;
+      }
+      do Memory.init();
+      do Main.testDefragmentation();
+      do Memory.init();
+      do Main.testCorrectness2();  
+      return;
+    }
+
+    function Array allocateBlocks(int nBlocks, int blockSize) {
+        var int nAllocated, iDummy;        	
+        var Array dummy;
+
+	let nAllocated = 0;
+	
+	let dummy = Array.new(nBlocks);
+	if (dummy = 0) {
+	   return dummy;
+	}
+	while (nAllocated < nBlocks) {
+	   let iDummy = Memory.alloc(blockSize);           
+           let dummy[nAllocated] = iDummy;
+           let nAllocated = nAllocated + 1;
+	   }
+	return dummy;
+    }
+    
+    function void disposeBlocks(Array blockArray, int arrayLength) {
+        var int i, iDummy;
+        let i = 0;
+        if (blockArray = 0) {
+	   return;
+ 	}
+	while (i < arrayLength) {
+	   if (~(blockArray[i]=0)) {
+		let iDummy = blockArray[i];
+		do Memory.deAlloc(iDummy);
+           }
+           let i = i + 1;
+        }
+	do blockArray.dispose();
+        return;
+    }	
+
+    function boolean testCorrectness0() {
+	var int d1,d2;
+ 	var boolean incorrect;
+        var int mostAllocated;
+	let incorrect = 0;
+	
+	let d1 = Memory.alloc(14336);
+	let d2 = Memory.alloc(1024);
+	
+	if (~((d1 = 0) | (d2=0))) {
+	  let incorrect = true;
+	  let mostAllocated = 14336+1024;
+	} else {
+	  if (~(d1 = 0)) {
+	      do Memory.deAlloc(d1);
+          }
+  	  if (~(d2 = 0)) {
+	      do Memory.deAlloc(d2);
+          }
+
+        }
+	do Memory.init();
+	let d1 = Memory.alloc(14335);
+	let d2 = Memory.alloc(1024);
+	
+	if (~((d1 = 0) | (d2=0))) {
+	  if (~incorrect) {
+		  let mostAllocated = 14335+1024;
+	}
+	  let incorrect = true;
+	} else {
+	  if (~(d1 = 0)) {
+	      do Memory.deAlloc(d1);
+          }
+  	  if (~(d2 = 0)) {
+	      do Memory.deAlloc(d2);
+          }
+
+        }
+	do Memory.init();
+	let d1 = Memory.alloc(14334);
+	let d2 = Memory.alloc(1024);
+	
+	if (~((d1 = 0) | (d2=0))) {
+	  if (~incorrect) {
+	      let mostAllocated = 14334+1024;
+	 }
+	  let incorrect = true;	
+	} else {
+	  if (~(d1 = 0)) {
+	      do Memory.deAlloc(d1);
+          }
+  	  if (~(d2 = 0)) {
+	      do Memory.deAlloc(d2);
+          }
+
+	}
+	do Memory.init();
+	if (incorrect) {
+		do Output.printString("Your solution allocated ");
+        	do Output.printInt(mostAllocated);
+        	do Output.printString(" words of memory, which is more than the maximum heap size of 14336 words.");
+	}
+        return incorrect; 
+}        	  
+	  
+    function boolean testCorrectness1() {
+	var int nAllocated, blockSize, nTests;
+        var boolean incorrect;
+	var Array dummy;
+
+        let incorrect = false; 
+	let nAllocated = 0;
+	let blockSize = 1024;
+	let nTests = 15;
+		
+	let dummy = Main.allocateBlocks(nTests, blockSize);
+	if (dummy = 0) {
+	   let incorrect = true;
+	   do Memory.init();
+           do Output.printString("Your solution failed to allocate ");
+           do Output.printInt(nTests);
+           do Output.printString(" words of memory, which is less than the available heap size of 14336 words.");
+	   do Output.println();
+	   return incorrect;
+	}
+        let incorrect = (~(dummy[nTests-1]=0));
+	if (incorrect) {
+		do Memory.init();
+        	do Output.printString("Your solution allocated ");
+        	do Output.printInt(nTests*blockSize);
+        	do Output.printString(" words of memory, which is more than the maximum heap size of 14336 words.");
+		do Output.println();
+		return incorrect;
+	} else {
+		do Main.disposeBlocks(dummy, nTests);
+	}
+	return incorrect;
+	}
+
+    function void testDefragmentation() {
+	var int nAllocated, blockSize1, blockSize2, nTests1, nTests2, i;
+	var boolean incorrect;
+        var Array dummy;
+
+        let incorrect = false; 
+	let nAllocated = 0;
+	let blockSize1 = 1024;
+        let blockSize2 = 2048;
+	let nTests1 = 13;
+        let nTests2 = 6;
+
+	let dummy = Main.allocateBlocks(nTests1, blockSize1);
+
+        let incorrect = (dummy[nTests1-1]=0);
+	if (incorrect) {
+        	do Output.printString("Your solution did not manage to allocate ");
+        	do Output.printInt(nTests1*blockSize1);
+        	do Output.printString(" words of memory, which is less than the heap size of 14336 words.");
+		do Output.println();
+	} else {
+		do Main.disposeBlocks(dummy, nTests1);
+	}
+	
+        let dummy = Main.allocateBlocks(nTests2, blockSize2);
+
+        let incorrect = (dummy[nTests2-1]=0);
+	if (incorrect) {
+		//do Memory.init();
+        	do Output.printString("Your solution did not manage to allocate ");
+        	do Output.printInt(nTests2*blockSize2);
+        	do Output.printString(" words of memory, which is less than the heap size of 14336 words.");
+		do Output.printString("It either does not deallocate memory (which is fine if it is wasteful) or it does not defragment the deallocated memory.");
+		do Output.println();
+	} else {
+		do Main.disposeBlocks(dummy, nTests2);
+	}
+	return;
+    }	
+
+    function void testCorrectness2() {
+	var String long,medium,short;
+
+	var Array a,b,c;
+	var int max, index, divmult,i,start,allocated,stop_allocating;
+	
+	var Array memory;
+	
+	let long="A very long string, not really!";
+	let medium="A medium sized string!";
+	let short="What?";
+
+	
+	let allocated=0;
+
+	let start=Array.new(1);
+	let max=start+1000;
+	let stop_allocating=0;
+	
+	while (stop_allocating = 0) {
+	  let a=Array.new(short.length());
+	  let allocated=allocated+short.length();
+	  
+
+	  let i=0;
+	  while(i<short.length()){
+	    let a[i]=short.charAt(i);
+	    let i=i+1;
+	  }
+
+	  let stop_allocating=Main.checkMaxReached(a,max,allocated);
+
+	  let b=Array.new(long.length()-3);
+
+	  let c=Array.new(short.length());
+  	  let allocated=allocated+short.length();
+
+	  
+	  let i=0;
+	  while(i < short.length()){
+	    let c[i]=short.charAt(i);
+	    let i=i+1;
+	  }
+	  if(stop_allocating = 0 ) { let stop_allocating=Main.checkMaxReached(c,max,allocated); }
+
+
+	  do b.dispose();
+	  
+	  let divmult = index/2*2;
+	  
+	  if (index-divmult = 0) {
+ 
+	    let b=Array.new(medium.length());
+    	    let allocated=allocated+medium.length();
+	    let i=0;
+	    while(i< medium.length()){
+	      let b[i]=medium.charAt(i);
+	      let i=i+1;
+	    }
+	    if(stop_allocating = 0 ) { let stop_allocating=Main.checkMaxReached(b,max,allocated);}
+	  }
+	  else {
+	    let b=Array.new(long.length());
+	    let allocated=allocated+long.length();
+	    let i=0;
+	    while(i< long.length()){
+	      let b[i]=long.charAt(i);
+	      let i=i+1;
+	    }
+	    if(stop_allocating = 0 ) { let stop_allocating=Main.checkMaxReached(b,max,allocated);}
+	  }	  
+	  
+	  let index=index+1;
+	}
+	
+
+	let index=0;
+	let memory=0;
+	do Output.printString("This is how your first 100 memory words look like:");
+	do Output.println();
+	do Output.println();
+	while (index<500) {
+	  do Output.printChar(memory[start+index]);
+	  let index=index+1;
+	}
+	return;
+    }
+    function int checkMaxReached(int now, int max, int allocated){
+      var int toreturn;
+      let toreturn=0;
+      if (now>max) {
+	let toreturn=1;
+	do Output.printString("Your program managed to allocate ");
+	do Output.printInt(allocated);
+	do Output.printString(" words!");
+	do Output.println();
+	do Output.println();
+      }
+      return toreturn;
+    }
+}

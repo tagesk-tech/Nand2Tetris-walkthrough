@@ -1,0 +1,27 @@
+function Sys.init 0
+push constant 1
+push constant 2
+call Class1.test 2
+push constant 3000
+pop pointer 1
+pop that 0//save to memloc 3000
+push constant 2
+push constant 1
+call Class1.test 2
+push constant 3000
+pop pointer 1
+pop that 1//save to memloc 3001
+push constant 1
+push constant 2
+call Class2.test 2
+push constant 3000
+pop pointer 1
+pop that 2//save to memloc 3002
+push constant 2
+push constant 1
+call Class2.test 2
+push constant 3000
+pop pointer 1
+pop that 3//save to memloc 3003
+label WHILE
+goto WHILE
